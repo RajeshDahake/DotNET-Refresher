@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-class Program
+class NumberSeriesPrinter
 {
     private static int number = 1;
     private static int max = 20;
