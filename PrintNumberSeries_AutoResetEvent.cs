@@ -3,14 +3,14 @@ using System.Threading;
 
 class NumberSeriesPrinter
 {
-    private static int number = 1;
-    private static int max = 20;
+    private static int currentNumber = 1;
+    private const int MaxNumber = 20;
 
-    static AutoResetEvent ev1 = new AutoResetEvent(true);
-    static AutoResetEvent ev2 = new AutoResetEvent(false);
-    static AutoResetEvent ev3 = new AutoResetEvent(false);
+    private static readonly AutoResetEvent thread1Event = new AutoResetEvent(true);
+    private static readonly AutoResetEvent thread2Event = new AutoResetEvent(false);
+    private static readonly AutoResetEvent thread3Event = new AutoResetEvent(false);
 
-    static void Print(
+    static void PrintNumbers(
         AutoResetEvent currentEvent,
         AutoResetEvent nextEvent)
     {
@@ -18,16 +18,16 @@ class NumberSeriesPrinter
         {
             currentEvent.WaitOne();
 
-            if (number > max)
+            if (currentNumber > MaxNumber)
             {
                 nextEvent.Set();
                 break;
             }
 
             Console.WriteLine(
-                $"{Thread.CurrentThread.Name} : {number}");
+                $"{Thread.CurrentThread.Name} : {currentNumber}");
 
-            number++;
+            currentNumber++;
 
             nextEvent.Set();
         }
@@ -35,21 +35,21 @@ class NumberSeriesPrinter
 
     static void Main()
     {
-        Thread t1 = new Thread(() => Print(ev1, ev2));
-        Thread t2 = new Thread(() => Print(ev2, ev3));
-        Thread t3 = new Thread(() => Print(ev3, ev1));
+        Thread thread1 = new Thread(() => PrintNumbers(thread1Event, thread2Event));
+        Thread thread2 = new Thread(() => PrintNumbers(thread2Event, thread3Event));
+        Thread thread3 = new Thread(() => PrintNumbers(thread3Event, thread1Event));
 
-        t1.Name = "Thread-1";
-        t2.Name = "Thread-2";
-        t3.Name = "Thread-3";
+        thread1.Name = "Thread-1";
+        thread2.Name = "Thread-2";
+        thread3.Name = "Thread-3";
 
-        t1.Start();
-        t2.Start();
-        t3.Start();
+        thread1.Start();
+        thread2.Start();
+        thread3.Start();
 
-        t1.Join();
-        t2.Join();
-        t3.Join();
+        thread1.Join();
+        thread2.Join();
+        thread3.Join();
 
         Console.WriteLine("Completed");
     }
